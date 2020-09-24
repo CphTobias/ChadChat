@@ -21,7 +21,7 @@ public class ChadChat {
                 UserRepository u = new Database();
 
                 //Chatlog chatlog = new Chatlog(new BoardFactory(repo).makeBoard(), new ArrayList<>());
-                instance = new ChadChat(u.findAllUsers());
+                instance = new ChadChat(u);
             } catch (ClassNotFoundException e) {
                 e.printStackTrace();
             }
@@ -29,11 +29,11 @@ public class ChadChat {
         return instance;
     }
 
-    private final Iterable<User> users;
+    private final UserRepository users;
     //private final Chatlog chatlog;
     private final List<MessageNotifier> notifiers = new ArrayList<>();
 
-    private ChadChat(Iterable<User> users) {
+    private ChadChat(UserRepository users) {
         this.users = users;
         //this.chatlog = chatlog;
     }
@@ -53,8 +53,7 @@ public class ChadChat {
     }
 
     public Iterable<User> getUsers() {
-        //return users.findAllUsers();
-        return null;
+        return users.findAllUsers();
     }
 
     /*public Board getBoard() {

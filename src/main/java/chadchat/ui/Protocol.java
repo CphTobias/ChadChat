@@ -2,18 +2,13 @@ package chadchat.ui;
 
 import chadchat.api.ChadChat;
 import chadchat.domain.User;
-import chadchat.domain.UserRepository;
 import chadchat.infrastructure.Database;
 
-import javax.xml.crypto.Data;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Queue;
 import java.util.Scanner;
-import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class Protocol implements ChadChat.MessageNotifier {
 
@@ -21,55 +16,68 @@ public class Protocol implements ChadChat.MessageNotifier {
 
     private Scanner in;
     private PrintWriter out;
-    private BlockingQueue messages;
-
-    public Protocol(Scanner in, PrintWriter out, BlockingQueue messages) throws IOException {
-        this.in = in;
-        this.out = out;
-        this.messages = messages;
-    }
+    private BlockingQueue<String> messages = new LinkedBlockingQueue<>();
 
     public Protocol(Scanner in, PrintWriter out) throws IOException {
         this.in = in;
         this.out = out;
     }
 
-    public void run(User user) throws ClassNotFoundException {
+    public void run() throws ClassNotFoundException, InterruptedException {
         Database d = new Database();
-        String userName = user.getName();
+        //String userName = user.getName();
 
-        out.println("Welcome to the General chatroom: " + userName + "\nIn this room there are: \n" + d.findAllUsers());
+        ChadChat.getInstance().register(this);
+        Thread t = new Thread(() -> {
+            while(true) {
+                //ChadChat.getInstance().sendMessage(user, in.nextLine());
+                String msg = null;
+                try {
+                    msg = messages.take();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                out.println(msg);
+                out.flush();
+            }
+        });
+        t.start();
+
+        User user = findUser();
+        handleUserInput(user);
+
+        /*out.println("Welcome to the General chatroom: " + userName + "\nIn this room there are: \n" + d.findAllUsers());
         out.flush();
 
         String line;
         while (!(line = in.next()).equals("exit")) {
             out.println(userName + ">" + line);
             out.flush();
+        }*/
+    }
+
+    public void handleUserInput(User user){
+        while(true){
+            String input = in.nextLine();
+            switch(input){
+                case "!exit":
+                    return;
+                case "!channel":
+                    //send to channel
+                    break;
+                default:
+                    ChadChat.getInstance().sendMessage(user, input);
+                    break;
+            }
         }
     }
 
-    public void makeUserAndRun() throws ClassNotFoundException, InterruptedException {
-        ChadChat.getInstance().register(this);
-        out.println("test");
-        out.flush();
-        String line = in.nextLine();
-        Thread t = new Thread(() -> {
-           while(true) {
-               ChadChat.getInstance().sendMessage(null, line);
-           }
-        });
-        t.start();
-
-        while (true){
-            String msg = (String) messages.take();
-            out.println(msg);
-            out.flush();
-        }
-
-        /*Database d = new Database();
+    public User findUser() throws ClassNotFoundException {
+        Database d = new Database();
         String line;
-        getLoginScreen();
-        while (!(line = in.next()).equals("exit")) {
+        String loginMsg = getLoginScreen();
+        addMessage(loginMsg);
+        while (!(line = in.next()).equals("!exit")) {
             switch (line) {
                 case "l":
                 case "login":
@@ -77,28 +85,32 @@ public class Protocol implements ChadChat.MessageNotifier {
                     break;
                 case "s":
                 case "signup":
-                    out.println("What do we call you: ");
-                    out.flush();
+                    addMessage("What do we call you: ");
                     String userName = in.next();
                     User userbefore = User.createUser(userName);
                     User userafter = d.createUser(userbefore);
-                    run(userafter);
+                    return userafter;
+                default:
+                    addMessage("Ugyldigt input");
                     break;
-                default: out.println("Ugyldigt input");
-                    out.flush();
             }
-        }*/
+        }
+        return null;
     }
 
-    private void getLoginScreen() {
-        out.println("Welcome to the chatroom! " +
+    private String getLoginScreen() {
+        String login = "Welcome to the chatroom! " +
                     "\nIf you are a new user write: [s]ignup" +
-                    "\nIf you are a returning user: [l]ogin");
-        out.flush();
+                    "\nIf you are a returning user: [l]ogin";
+        return login;
+    }
+
+    public void addMessage(String message){
+        messages.add(message);
     }
 
     @Override
     public void notifyNewMessage(User user, String message) {
-        messages.add("" + user + ": " + message);
+        messages.add("" + user.getName() + ": " + message);
     }
 }

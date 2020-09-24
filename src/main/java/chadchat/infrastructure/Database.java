@@ -15,8 +15,14 @@ public class Database implements UserRepository {
     //  Database credentials
     private static final String USER = "chadchat";
 
+    // Database version
+    private static final int version = 1;
+
     public Database() throws ClassNotFoundException {
         Class.forName(JDBC_DRIVER);
+        if (getCurrentVersion() != getVersion()) {
+            throw new IllegalStateException("Database in wrong state");
+        }
     }
 
     @Override
@@ -56,5 +62,30 @@ public class Database implements UserRepository {
             e.printStackTrace();
             return null;
         }
+    }
+
+    public static int getVersion() {
+        return version;
+    }
+
+    public static int getCurrentVersion() {
+        try (Connection conn = getConnection()) {
+            Statement s = conn.createStatement();
+            ResultSet rs = s.executeQuery("SELECT value FROM properties WHERE name = 'version';");
+            if(rs.next()) {
+                String column = rs.getString("value");
+                return Integer.parseInt(column);
+            } else {
+                System.err.println("No version in properties.");
+                return -1;
+            }
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+            return -1;
+        }
+    }
+
+    public static Connection getConnection() throws SQLException {
+        return DriverManager.getConnection(DB_URL, USER, null);
     }
 }

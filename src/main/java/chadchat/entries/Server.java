@@ -34,7 +34,7 @@ public class Server {
                     try {
                         Protocol p = new Protocol(
                                 new Scanner(socket.getInputStream()), new PrintWriter(socket.getOutputStream()));
-                        p.makeUserAndRun();
+                        p.run();
                         socket.close();
                     } catch (IOException | ClassNotFoundException | InterruptedException e){
                         try {
