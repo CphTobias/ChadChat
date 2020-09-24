@@ -20,12 +20,8 @@ public class ChadChat {
             try {
                 UserRepository u = new Database();
 
-                Game game = new Game(new BoardFactory(repo).makeBoard(), new ArrayList<>());
-                instance = new Quiztastic(u.findAllUsers(), game);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            } catch (ParseException e) {
-                throw new RuntimeException(e);
+                //Chatlog chatlog = new Chatlog(new BoardFactory(repo).makeBoard(), new ArrayList<>());
+                instance = new ChadChat(u.findAllUsers());
             } catch (ClassNotFoundException e) {
                 e.printStackTrace();
             }
@@ -33,13 +29,13 @@ public class ChadChat {
         return instance;
     }
 
-    private final UserRepository users;
-    private final Chatlog chatlog;
+    private final Iterable<User> users;
+    //private final Chatlog chatlog;
     private final List<MessageNotifier> notifiers = new ArrayList<>();
 
-    private ChadChat(UserRepository users, Chatlog chatlog) {
+    private ChadChat(Iterable<User> users) {
         this.users = users;
-        this.chatlog = chatlog;
+        //this.chatlog = chatlog;
     }
 
     public void sendMessage(User user, String message){
@@ -48,7 +44,7 @@ public class ChadChat {
         }
     }
 
-    public void registerMessage(MessageNotifier n){
+    public void register(MessageNotifier n){
         notifiers.add(n);
     }
 
@@ -56,11 +52,12 @@ public class ChadChat {
         void notifyNewMessage(User user, String message);
     }
 
-    /*public Iterable<Question> getQuestions() {
-        return questions.getQuestions();
+    public Iterable<User> getUsers() {
+        //return users.findAllUsers();
+        return null;
     }
 
-    public Board getBoard() {
+    /*public Board getBoard() {
         return new BoardFactory(questions).makeBoard();
     }
 

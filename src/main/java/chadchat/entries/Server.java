@@ -36,7 +36,7 @@ public class Server {
                                 new Scanner(socket.getInputStream()), new PrintWriter(socket.getOutputStream()));
                         p.makeUserAndRun();
                         socket.close();
-                    } catch (IOException | ClassNotFoundException e){
+                    } catch (IOException | ClassNotFoundException | InterruptedException e){
                         try {
                             socket.close();
                         } catch (IOException e2) {

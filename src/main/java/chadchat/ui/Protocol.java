@@ -1,5 +1,6 @@
 package chadchat.ui;
 
+import chadchat.api.ChadChat;
 import chadchat.domain.User;
 import chadchat.domain.UserRepository;
 import chadchat.infrastructure.Database;
@@ -7,14 +8,26 @@ import chadchat.infrastructure.Database;
 import javax.xml.crypto.Data;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Queue;
 import java.util.Scanner;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 
-public class Protocol {
+public class Protocol implements ChadChat.MessageNotifier {
 
     //ChadChat chadchat = ChadChat.getInstance();
 
     private Scanner in;
     private PrintWriter out;
+    private BlockingQueue messages;
+
+    public Protocol(Scanner in, PrintWriter out, BlockingQueue messages) throws IOException {
+        this.in = in;
+        this.out = out;
+        this.messages = messages;
+    }
 
     public Protocol(Scanner in, PrintWriter out) throws IOException {
         this.in = in;
@@ -35,8 +48,25 @@ public class Protocol {
         }
     }
 
-    public void makeUserAndRun() throws ClassNotFoundException {
-        Database d = new Database();
+    public void makeUserAndRun() throws ClassNotFoundException, InterruptedException {
+        ChadChat.getInstance().register(this);
+        out.println("test");
+        out.flush();
+        String line = in.nextLine();
+        Thread t = new Thread(() -> {
+           while(true) {
+               ChadChat.getInstance().sendMessage(null, line);
+           }
+        });
+        t.start();
+
+        while (true){
+            String msg = (String) messages.take();
+            out.println(msg);
+            out.flush();
+        }
+
+        /*Database d = new Database();
         String line;
         getLoginScreen();
         while (!(line = in.next()).equals("exit")) {
@@ -57,7 +87,7 @@ public class Protocol {
                 default: out.println("Ugyldigt input");
                     out.flush();
             }
-        }
+        }*/
     }
 
     private void getLoginScreen() {
@@ -65,5 +95,10 @@ public class Protocol {
                     "\nIf you are a new user write: [s]ignup" +
                     "\nIf you are a returning user: [l]ogin");
         out.flush();
+    }
+
+    @Override
+    public void notifyNewMessage(User user, String message) {
+        messages.add("" + user + ": " + message);
     }
 }
