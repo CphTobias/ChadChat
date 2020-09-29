@@ -1,6 +1,8 @@
 package chadchat.api;
 
+import chadchat.domain.Message;
 import chadchat.domain.User;
+import chadchat.domain.UserExists;
 import chadchat.domain.UserRepository;
 import chadchat.infrastructure.Database;
 
@@ -8,6 +10,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.text.ParseException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,18 +33,37 @@ public class ChadChat {
     }
 
     private final UserRepository users;
-    //private final Chatlog chatlog;
     private final List<MessageNotifier> notifiers = new ArrayList<>();
 
     private ChadChat(UserRepository users) {
         this.users = users;
-        //this.chatlog = chatlog;
     }
 
-    public void sendMessage(User user, String message){
-        for (MessageNotifier n: notifiers){
-            n.notifyNewMessage(user, message);
+    public User createUser(String name, String password) throws UserExists {
+        byte[] salt = User.generateSalt();
+        byte[] secret = User.calculateSecret(salt, password);
+        return users.createUser(name, salt, secret);
+    }
+
+    public User login(String name, String password) throws InvalidPassword {
+        User user = users.findUser(name);
+        if (user.isPasswordCorrect(password)) {
+            return user;
+        } else  {
+            throw new InvalidPassword();
         }
+    }
+
+
+    public void sendMessage(User user, String message){
+        Message m = new Message(0, user.getId(), message, LocalDateTime.now());
+        for (MessageNotifier n: notifiers){
+            n.notifyNewMessage(m);
+        }
+    }
+
+    public User findUser(int id){
+        return users.findUser(id);
     }
 
     public void register(MessageNotifier n){
@@ -49,7 +71,7 @@ public class ChadChat {
     }
 
     public interface MessageNotifier {
-        void notifyNewMessage(User user, String message);
+        void notifyNewMessage(Message m);
     }
 
     public Iterable<User> getUsers() {

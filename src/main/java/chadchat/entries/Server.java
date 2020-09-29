@@ -1,6 +1,7 @@
 package chadchat.entries;
 
 import chadchat.domain.User;
+import chadchat.domain.UserExists;
 import chadchat.domain.UserRepository;
 import chadchat.infrastructure.Database;
 import chadchat.ui.Protocol;
@@ -36,7 +37,7 @@ public class Server {
                                 new Scanner(socket.getInputStream()), new PrintWriter(socket.getOutputStream()));
                         p.run();
                         socket.close();
-                    } catch (IOException | ClassNotFoundException | InterruptedException e){
+                    } catch (IOException | ClassNotFoundException | InterruptedException | UserExists e){
                         try {
                             socket.close();
                         } catch (IOException e2) {

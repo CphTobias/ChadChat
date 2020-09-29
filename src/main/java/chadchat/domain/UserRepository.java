@@ -1,6 +1,7 @@
 package chadchat.domain;
 
-public interface UserRepository {
+public interface UserRepository extends UserFactory {
     Iterable<User> findAllUsers();
-    User createUser(User user);
+    User findUser(String name);
+    User findUser(int id);
 }

@@ -1,18 +1,22 @@
 package chadchat.ui;
 
 import chadchat.api.ChadChat;
+import chadchat.api.InvalidPassword;
+import chadchat.domain.Message;
 import chadchat.domain.User;
+import chadchat.domain.UserExists;
 import chadchat.infrastructure.Database;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.time.format.DateTimeFormatter;
 import java.util.Scanner;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class Protocol implements ChadChat.MessageNotifier {
 
-    //ChadChat chadchat = ChadChat.getInstance();
+    ChadChat chadchat = ChadChat.getInstance();
 
     private Scanner in;
     private PrintWriter out;
@@ -23,7 +27,7 @@ public class Protocol implements ChadChat.MessageNotifier {
         this.out = out;
     }
 
-    public void run() throws ClassNotFoundException, InterruptedException {
+    public void run() throws ClassNotFoundException, InterruptedException, UserExists {
         Database d = new Database();
         //String userName = user.getName();
 
@@ -72,26 +76,45 @@ public class Protocol implements ChadChat.MessageNotifier {
         }
     }
 
-    public User findUser() throws ClassNotFoundException {
+    public User findUser() throws ClassNotFoundException, UserExists {
         Database d = new Database();
         String line;
         String loginMsg = getLoginScreen();
-        addMessage(loginMsg);
+        out.println(loginMsg);
+        out.flush();
         while (!(line = in.next()).equals("!exit")) {
             switch (line) {
                 case "l":
                 case "login":
-                    //login();
+                    out.println("Username: ");
+                    out.flush();
+                    String usernameLogin = in.next();
+                    out.println("Password: ");
+                    out.flush();
+                    String passwordLogin = in.next();
+                    try {
+                        User user = chadchat.login(usernameLogin, passwordLogin);
+                        out.println("Successfully logged in.");
+                        out.flush();
+                        return user;
+                    } catch (InvalidPassword invalidPassword) {
+                        out.println("Rejected.");
+                        out.flush();
+                    }
                     break;
                 case "s":
                 case "signup":
-                    addMessage("What do we call you: ");
-                    String userName = in.next();
-                    User userbefore = User.createUser(userName);
-                    User userafter = d.createUser(userbefore);
-                    return userafter;
+                    out.println("Username: ");
+                    out.flush();
+                    String userNameCreate = in.next();
+                    out.println("Password: ");
+                    out.flush();
+                    String passwordCreate = in.next();
+                    User userbefore = chadchat.createUser(userNameCreate, passwordCreate);
+                    return userbefore;
                 default:
-                    addMessage("Ugyldigt input");
+                    out.println("Ugyldigt input");
+                    out.flush();
                     break;
             }
         }
@@ -110,7 +133,9 @@ public class Protocol implements ChadChat.MessageNotifier {
     }
 
     @Override
-    public void notifyNewMessage(User user, String message) {
-        messages.add("" + user.getName() + ": " + message);
+    public void notifyNewMessage(Message m) {
+        m.getUserID();
+        User user = chadchat.findUser(m.getUserID());
+        messages.add("" + m.getTime().format(DateTimeFormatter.ISO_TIME) + user.getName() + ": " + m.getMsg());
     }
 }
