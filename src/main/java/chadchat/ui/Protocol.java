@@ -136,6 +136,6 @@ public class Protocol implements ChadChat.MessageNotifier {
     public void notifyNewMessage(Message m) {
         m.getUserID();
         User user = chadchat.findUser(m.getUserID());
-        messages.add("" + m.getTime().format(DateTimeFormatter.ISO_TIME) + user.getName() + ": " + m.getMsg());
+        messages.add("" + m.getTime().format(DateTimeFormatter.ISO_TIME) + " " + user.getName() + ": " + m.getMsg());
     }
 }

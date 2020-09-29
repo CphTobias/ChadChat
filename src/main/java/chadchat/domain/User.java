@@ -60,6 +60,13 @@ public class User {
         return Arrays.equals(this.secret, calculateSecret(salt, password));
     }
 
+    public boolean doesUserExist(String user){
+        if (user == getName()){
+            return true;
+        }
+        return false;
+    }
+
     /*public static User createUser(String name) {
         return new User(-1, name);
     }*/
