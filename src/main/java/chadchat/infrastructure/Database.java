@@ -19,7 +19,7 @@ public class Database implements UserRepository {
     private static final String USER = "chadchat";
 
     // Database version
-    private static final int version = 2;
+    private static final int version = 3;
 
     public Database() throws ClassNotFoundException {
         Class.forName(JDBC_DRIVER);
