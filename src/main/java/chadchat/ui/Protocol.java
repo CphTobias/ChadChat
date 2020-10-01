@@ -48,16 +48,9 @@ public class Protocol implements ChadChat.MessageNotifier {
         t.start();
 
         User user = findUser();
+        chadchat.sendMessage(user," Has joined the General chatroom!");
+        messages.add(getHelpMessage());
         handleUserInput(user);
-
-        /*out.println("Welcome to the General chatroom: " + userName + "\nIn this room there are: \n" + d.findAllUsers());
-        out.flush();
-
-        String line;
-        while (!(line = in.next()).equals("exit")) {
-            out.println(userName + ">" + line);
-            out.flush();
-        }*/
     }
 
     public void handleUserInput(User user){
@@ -66,11 +59,32 @@ public class Protocol implements ChadChat.MessageNotifier {
             switch(input){
                 case "!exit":
                     return;
+                case "!logout":
+                    try {
+                        if (user.doesUserExist(user.getName()) == true){
+                            findUser();
+                        }
+                    } catch (ClassNotFoundException e) {
+                        e.printStackTrace();
+                    } catch (UserExists userExists) {
+                        userExists.printStackTrace();
+                    }
                 case "!channel":
                     //send to channel
                     break;
+                case "!list":
+                    out.println("How many messages do you want to see? ");
+                    out.flush();
+                    String previousMessages = in.next();
+                    int msgToInt = Integer.parseInt(previousMessages);
+                    for (Message m: chadchat.findSomeMessages(msgToInt)) {
+                        messages.add(m.getId() + " - " + m.getTime().format(DateTimeFormatter.ISO_LOCAL_TIME) + " - " + m.getUserID() + ": " + m.getMsg());
+                    }
+                    break;
                 default:
-                    ChadChat.getInstance().sendMessage(user, input);
+                    if (!input.isEmpty()){
+                        ChadChat.getInstance().sendMessage(user, input);
+                    }
                     break;
             }
         }
@@ -89,6 +103,8 @@ public class Protocol implements ChadChat.MessageNotifier {
                     out.println("Username: ");
                     out.flush();
                     String usernameLogin = in.next();
+                    out.println(usernameLogin);
+                    out.flush();
                     out.println("Password: ");
                     out.flush();
                     String passwordLogin = in.next();
@@ -98,7 +114,7 @@ public class Protocol implements ChadChat.MessageNotifier {
                         out.flush();
                         return user;
                     } catch (InvalidPassword invalidPassword) {
-                        out.println("Rejected.");
+                        out.println("Invalid password or username.");
                         out.flush();
                     }
                     break;
@@ -128,14 +144,24 @@ public class Protocol implements ChadChat.MessageNotifier {
         return login;
     }
 
+    private String getHelpMessage() {
+        String helpMessage = "\nRoom commands:" +
+                "\n\"!list\" To see previous messages" +
+                "\n\"!channel\" To change to a different channel\"" +
+                "\n\"!logout\" To logout of your current user\"" +
+                "\n\"!exit\" To close the program\n";
+        return helpMessage;
+    }
+
     public void addMessage(String message){
         messages.add(message);
     }
 
     @Override
     public void notifyNewMessage(Message m) {
-        m.getUserID();
+        //m.getUserID();
         User user = chadchat.findUser(m.getUserID());
+        //chadchat.createMessage(m.getUserID(), m.getMsg(), m.getTime());
         messages.add("" + m.getTime().format(DateTimeFormatter.ISO_TIME) + " " + user.getName() + ": " + m.getMsg());
     }
 }

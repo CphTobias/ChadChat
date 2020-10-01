@@ -4,4 +4,5 @@ public interface UserRepository extends UserFactory {
     Iterable<User> findAllUsers();
     User findUser(String name);
     User findUser(int id);
+    Iterable<Message> findSomeMessages(int i);
 }

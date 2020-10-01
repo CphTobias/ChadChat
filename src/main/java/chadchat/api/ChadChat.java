@@ -6,9 +6,11 @@ import chadchat.domain.UserExists;
 import chadchat.domain.UserRepository;
 import chadchat.infrastructure.Database;
 
+import javax.imageio.plugins.tiff.TIFFImageReadParam;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.sql.Timestamp;
 import java.text.ParseException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -54,9 +56,8 @@ public class ChadChat {
         }
     }
 
-
     public void sendMessage(User user, String message){
-        Message m = new Message(0, user.getId(), message, LocalDateTime.now());
+        Message m = users.createMessage(user.getId(), message, LocalDateTime.now());
         for (MessageNotifier n: notifiers){
             n.notifyNewMessage(m);
         }
@@ -68,6 +69,11 @@ public class ChadChat {
 
     public void register(MessageNotifier n){
         notifiers.add(n);
+    }
+
+    public Iterable<Message> findSomeMessages(int i) {
+
+        return users.findSomeMessages(i);
     }
 
     public interface MessageNotifier {
