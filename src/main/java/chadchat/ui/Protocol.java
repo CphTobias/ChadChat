@@ -34,7 +34,6 @@ public class Protocol implements ChadChat.MessageNotifier {
         ChadChat.getInstance().register(this);
         Thread t = new Thread(() -> {
             while(true) {
-                //ChadChat.getInstance().sendMessage(user, in.nextLine());
                 String msg = null;
                 try {
                     msg = messages.take();
@@ -48,7 +47,7 @@ public class Protocol implements ChadChat.MessageNotifier {
         t.start();
 
         User user = findUser();
-        chadchat.sendMessage(user," Has joined the General chatroom!");
+        chadchat.sendMessage(user,"Has joined the General chatroom!");
         messages.add(getHelpMessage());
         handleUserInput(user);
     }
@@ -58,6 +57,7 @@ public class Protocol implements ChadChat.MessageNotifier {
             String input = in.nextLine();
             switch(input){
                 case "!exit":
+                    chadchat.sendMessage(user, "Has left the chat");
                     return;
                 case "!logout":
                     try {
@@ -81,6 +81,18 @@ public class Protocol implements ChadChat.MessageNotifier {
                         messages.add(m.getId() + " - " + m.getTime().format(DateTimeFormatter.ISO_LOCAL_TIME) + " - " + m.getUserID() + ": " + m.getMsg());
                     }
                     break;
+                case "!listall":
+                    for (Message m: chadchat.findAllMessages()) {
+                        messages.add(m.getId() + " - " + m.getTime().format(DateTimeFormatter.ISO_LOCAL_TIME) + " - " + m.getUserID() + ": " + m.getMsg());
+                    }
+                case "!listfrom":
+                    out.println("Who do you want to see messages from? in ID :)");
+                    out.flush();
+                    String whatperson = in.next();
+                    int personToInt = Integer.parseInt(whatperson);
+                    for (Message m: chadchat.findMessageFrom(personToInt)) {
+                        messages.add(m.getId() + " - " + m.getTime().format(DateTimeFormatter.ISO_LOCAL_TIME) + " - " + m.getUserID() + ": " + m.getMsg());
+                    }
                 default:
                     if (!input.isEmpty()){
                         ChadChat.getInstance().sendMessage(user, input);
@@ -146,7 +158,9 @@ public class Protocol implements ChadChat.MessageNotifier {
 
     private String getHelpMessage() {
         String helpMessage = "\nRoom commands:" +
-                "\n\"!list\" To see previous messages" +
+                "\n\"!list\" To see a number of previous messages" +
+                "\n\"!listall\" To see previous messages" +
+                "\n\"!listfrom\" To see previous messages from a person" +
                 "\n\"!channel\" To change to a different channel\"" +
                 "\n\"!logout\" To logout of your current user\"" +
                 "\n\"!exit\" To close the program\n";

@@ -76,6 +76,15 @@ public class ChadChat {
         return users.findSomeMessages(i);
     }
 
+    public Iterable<Message> findAllMessages() {
+        return users.findAllMessages();
+    }
+
+    public Iterable<Message> findMessageFrom(int userID) {
+        return users.findMessageFrom(userID);
+    }
+
+
     public interface MessageNotifier {
         void notifyNewMessage(Message m);
     }

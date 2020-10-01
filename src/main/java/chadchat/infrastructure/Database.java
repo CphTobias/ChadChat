@@ -147,6 +147,22 @@ public class Database implements UserRepository {
         }
     }
 
+    public Iterable<Message> findMessageFrom(int userID) throws NoSuchElementException {
+        try(Connection conn = getConnection()) {
+            PreparedStatement s = conn.prepareStatement(
+                    "SELECT * FROM message WHERE userID = ?;");
+            s.setInt(1, userID);
+            ResultSet rs = s.executeQuery();
+            ArrayList<Message> items = new ArrayList<>();
+            while(rs.next()) {
+                items.add(loadMessage(rs));
+            }
+            return items;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     @Override
     public User createUser(String name, byte[] salt, byte[] secret) throws UserExists {
         int id;
