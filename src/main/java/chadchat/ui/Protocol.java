@@ -93,6 +93,12 @@ public class Protocol implements ChadChat.MessageNotifier {
                     for (Message m: chadchat.findMessageFrom(personToInt)) {
                         messages.add(m.getId() + " - " + m.getTime().format(DateTimeFormatter.ISO_LOCAL_TIME) + " - " + m.getUserID() + ": " + m.getMsg());
                     }
+                case "!users":
+                    int counter = 1;
+                    for (User u: chadchat.getUsers()) {
+                        messages.add(counter + " - " + u.getName());
+                        counter++;
+                    }
                 default:
                     if (!input.isEmpty()){
                         ChadChat.getInstance().sendMessage(user, input);

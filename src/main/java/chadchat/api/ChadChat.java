@@ -21,11 +21,8 @@ public class ChadChat {
 
     public static ChadChat getInstance() {
         if (instance == null) {
-            //InputStream s = ChadChat.class;
             try {
                 ChatRepository u = new Database();
-
-                //Chatlog chatlog = new Chatlog(new BoardFactory(repo).makeBoard(), new ArrayList<>());
                 instance = new ChadChat(u);
             } catch (ClassNotFoundException e) {
                 e.printStackTrace();
@@ -92,12 +89,4 @@ public class ChadChat {
     public Iterable<User> getUsers() {
         return users.findAllUsers();
     }
-
-    /*public Board getBoard() {
-        return new BoardFactory(questions).makeBoard();
-    }
-
-    public Game getCurrentGame() {
-        return game;
-    }*/
 }
