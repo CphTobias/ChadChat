@@ -91,7 +91,6 @@ public class ChadChat {
         return this.activeUsers;
     }
 
-
     public interface MessageNotifier {
         void notifyNewMessage(Message m);
     }
