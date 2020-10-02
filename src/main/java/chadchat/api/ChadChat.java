@@ -31,6 +31,7 @@ public class ChadChat {
         return instance;
     }
 
+    private final List<User> activeUsers = new ArrayList<>();
     private final ChatRepository users;
     private final List<MessageNotifier> notifiers = new ArrayList<>();
 
@@ -44,9 +45,14 @@ public class ChadChat {
         return users.createUser(name, salt, secret);
     }
 
+    public void logout(User user){
+        activeUsers.remove(user);
+    }
+
     public User login(String name, String password) throws InvalidPassword {
         User user = users.findUser(name);
         if (user.isPasswordCorrect(password)) {
+            activeUsers.add(user);
             return user;
         } else  {
             throw new InvalidPassword();
@@ -79,6 +85,10 @@ public class ChadChat {
 
     public Iterable<Message> findMessageFrom(int userID) {
         return users.findMessageFrom(userID);
+    }
+
+    public Iterable<User> getActiveUsers() {
+        return this.activeUsers;
     }
 
 

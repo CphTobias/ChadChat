@@ -45,30 +45,28 @@ public class Protocol implements ChadChat.MessageNotifier {
             }
         });
         t.start();
-
-        User user = findUser();
-        chadchat.sendMessage(user,"Has joined the General chatroom!");
-        messages.add(getHelpMessage());
-        handleUserInput(user);
+            User user = null;
+            try {
+            user = findUser();
+            chadchat.sendMessage(user, "Has joined the General chatroom!");
+            messages.add(getHelpMessage());
+            handleUserInput(user);
+        } finally {
+            if (user != null) {
+                chadchat.logout(user);
+            }
+        }
     }
 
     public void handleUserInput(User user){
-        while(true){
+        Boolean inchat = true;
+        while(inchat){
             String input = in.nextLine();
             switch(input){
                 case "!exit":
                     chadchat.sendMessage(user, "Has left the chat");
-                    return;
-                case "!logout":
-                    try {
-                        if (user.doesUserExist(user.getName()) == true){
-                            findUser();
-                        }
-                    } catch (ClassNotFoundException e) {
-                        e.printStackTrace();
-                    } catch (UserExists userExists) {
-                        userExists.printStackTrace();
-                    }
+                    inchat = false;
+                    break;
                 case "!channel":
                     //send to channel
                     break;
@@ -85,6 +83,7 @@ public class Protocol implements ChadChat.MessageNotifier {
                     for (Message m: chadchat.findAllMessages()) {
                         messages.add(m.getId() + " - " + m.getTime().format(DateTimeFormatter.ISO_LOCAL_TIME) + " - " + m.getUserID() + ": " + m.getMsg());
                     }
+                    break;
                 case "!listfrom":
                     out.println("Who do you want to see messages from? in ID :)");
                     out.flush();
@@ -93,12 +92,12 @@ public class Protocol implements ChadChat.MessageNotifier {
                     for (Message m: chadchat.findMessageFrom(personToInt)) {
                         messages.add(m.getId() + " - " + m.getTime().format(DateTimeFormatter.ISO_LOCAL_TIME) + " - " + m.getUserID() + ": " + m.getMsg());
                     }
+                    break;
                 case "!users":
-                    int counter = 1;
-                    for (User u: chadchat.getUsers()) {
-                        messages.add(counter + " - " + u.getName());
-                        counter++;
+                    for (User u: chadchat.getActiveUsers()) {
+                            messages.add(u.getId() + " - " + u.getName());
                     }
+                    break;
                 default:
                     if (!input.isEmpty()){
                         ChadChat.getInstance().sendMessage(user, input);
@@ -106,6 +105,8 @@ public class Protocol implements ChadChat.MessageNotifier {
                     break;
             }
         }
+        out.println("Hope to see you again!");
+        out.flush();
     }
 
     public User findUser() throws ClassNotFoundException, UserExists {
@@ -164,11 +165,11 @@ public class Protocol implements ChadChat.MessageNotifier {
 
     private String getHelpMessage() {
         String helpMessage = "\nRoom commands:" +
+                "\n\"!users\" To see who is online" +
                 "\n\"!list\" To see a number of previous messages" +
                 "\n\"!listall\" To see previous messages" +
                 "\n\"!listfrom\" To see previous messages from a person" +
-                "\n\"!channel\" To change to a different channel\"" +
-                "\n\"!logout\" To logout of your current user\"" +
+                "\n\"!channel\" WORK IN PROGRESS\"" +
                 "\n\"!exit\" To close the program\n";
         return helpMessage;
     }
