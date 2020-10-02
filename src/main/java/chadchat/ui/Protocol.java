@@ -29,7 +29,6 @@ public class Protocol implements ChadChat.MessageNotifier {
 
     public void run() throws ClassNotFoundException, InterruptedException, UserExists {
         Database d = new Database();
-        //String userName = user.getName();
 
         ChadChat.getInstance().register(this);
         Thread t = new Thread(() -> {
@@ -129,7 +128,7 @@ public class Protocol implements ChadChat.MessageNotifier {
                     String passwordLogin = in.next();
                     try {
                         User user = chadchat.login(usernameLogin, passwordLogin);
-                        out.println("Successfully logged in.");
+                        out.println("Successfully logged in.\n");
                         out.flush();
                         return user;
                     } catch (InvalidPassword invalidPassword) {
@@ -180,9 +179,7 @@ public class Protocol implements ChadChat.MessageNotifier {
 
     @Override
     public void notifyNewMessage(Message m) {
-        //m.getUserID();
         User user = chadchat.findUser(m.getUserID());
-        //chadchat.createMessage(m.getUserID(), m.getMsg(), m.getTime());
         messages.add("" + m.getTime().format(DateTimeFormatter.ISO_TIME) + " " + user.getName() + ": " + m.getMsg());
     }
 }
