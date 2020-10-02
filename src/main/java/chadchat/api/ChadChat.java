@@ -23,7 +23,7 @@ public class ChadChat {
         if (instance == null) {
             //InputStream s = ChadChat.class;
             try {
-                UserRepository u = new Database();
+                ChatRepository u = new Database();
 
                 //Chatlog chatlog = new Chatlog(new BoardFactory(repo).makeBoard(), new ArrayList<>());
                 instance = new ChadChat(u);
@@ -34,10 +34,10 @@ public class ChadChat {
         return instance;
     }
 
-    private final UserRepository users;
+    private final ChatRepository users;
     private final List<MessageNotifier> notifiers = new ArrayList<>();
 
-    private ChadChat(UserRepository users) {
+    private ChadChat(ChatRepository users) {
         this.users = users;
     }
 

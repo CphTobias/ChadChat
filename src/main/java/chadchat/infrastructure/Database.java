@@ -1,5 +1,6 @@
 package chadchat.infrastructure;
 
+import chadchat.api.ChatRepository;
 import chadchat.domain.Message;
 import chadchat.domain.User;
 import chadchat.domain.UserExists;
@@ -12,7 +13,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.NoSuchElementException;
 
-public class Database implements UserRepository {
+public class Database implements ChatRepository {
 
     // JDBC driver name and database URL
     private static final String JDBC_DRIVER = "com.mysql.cj.jdbc.Driver";
